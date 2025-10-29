@@ -1,0 +1,17 @@
+version: "3.9"
+
+networks:
+  minio_network:
+    external: true
+
+services:
+  tcp_server:
+    build: .
+    container_name: uvloop-tcp-server
+    volumes:
+      - ./app:/app
+    ports:
+      - "8888:8888"
+    restart: always
+    networks:
+      - minio_network
