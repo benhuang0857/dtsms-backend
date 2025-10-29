@@ -1,28 +1,34 @@
 #!/bin/bash
 
-cd ~/docker/minio
+# Load environment variables from .env file
+set -a
+source .env
+set +a
 
-export MINIO_STORAGE_LOCATION=~/data/minio
-export MINIO_PORT=9001
-export MINIO_CONSOLE_PORT=9091
-export MINIO_ROOT_USER=minio
-export MINIO_ROOT_PASSWORD=minio123
+# Create data directory if not exists
+mkdir -p "${MINIO_STORAGE_LOCATION}"
 
-# only create sym link if not existing
-if [ ! -d "./data" ]; then ln -s $MINIO_STORAGE_LOCATION ./data; fi
-
-
-
+# Pull latest images and start services
 docker-compose pull
 docker-compose up --remove-orphans -d
 
+echo "Waiting for MinIO to be ready..."
+sleep 5
+
+# MinIO client command alias
 mc='docker exec -it minio-client mc'
 
-# create console user and policy
-export MINIO_CONSOLE_USER=console
-export MINIO_CONSOLE_PASSWORD=console123
-$mc admin user add minio/ $MINIO_CONSOLE_USER $MINIO_CONSOLE_PASSWORD
-$mc admin policy add minio/ consoleAdmin /root/.mc/admin.json
-$mc admin policy set minio consoleAdmin user=$MINIO_CONSOLE_USER
+# Create additional console user and policy (optional)
+echo "Creating console user..."
+$mc admin user add minio/ ${MINIO_CONSOLE_USER} ${MINIO_CONSOLE_PASSWORD} || echo "User may already exist"
+
+# Note: You can add custom policies here if needed
+# $mc admin policy add minio/ consoleAdmin /root/.mc/admin.json
+# $mc admin policy set minio consoleAdmin user=${MINIO_CONSOLE_USER}
+
+echo "MinIO is ready!"
+echo "API: http://localhost:${MINIO_PORT}"
+echo "Console: http://localhost:${MINIO_CONSOLE_PORT}"
+echo "Root User: ${MINIO_ROOT_USER}"
 
 

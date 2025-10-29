@@ -1,46 +1,107 @@
-### Simple setup for minio, minio console and minio client using docker compose 
+# MinIO Docker Setup
 
-#### Run from single command (e.g. for development)
+Simple setup for MinIO, MinIO Console (built-in), and MinIO Client using Docker Compose.
 
-- requires [docker compose](https://docs.docker.com/compose/)
-- clone/fork this repo and cd into it
-- start using the following command (copy all and run) - change password/ports as required - command expects a folder under "~/data/minio" where minio will be persisted - change to your peristance location
+## Requirements
+
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/)
+
+## Quick Start
+
+### Option 1: Using the start script (Recommended)
+
+```bash
+cd minio
+./start.sh
 ```
-export MINIO_STORAGE_LOCATION=~/data/minio && \
-export MINIO_PORT=9001 && \
-export MINIO_CONSOLE_PORT=9091 && \
-export MINIO_ROOT_USER=minio && \
-export MINIO_ROOT_PASSWORD=minio123 && \
-\
-if [ ! -d "./data" ]; then ln -s $MINIO_STORAGE_LOCATION ./data; fi && \
-\
-docker-compose pull && \
-docker-compose up --remove-orphans -d && \
-\
+
+The script will:
+- Load configuration from `.env` file
+- Create necessary directories
+- Start MinIO services
+- Create additional console user (optional)
+
+### Option 2: Manual start
+
+1. **Configure environment** (optional, defaults are provided):
+   Edit `.env` file to customize:
+   ```env
+   MINIO_PORT=9001
+   MINIO_CONSOLE_PORT=9091
+   MINIO_ROOT_USER=minio
+   MINIO_ROOT_PASSWORD=minio123
+   ```
+
+2. **Start services**:
+   ```bash
+   cd minio
+   docker-compose up -d
+   ```
+
+## Access
+
+After starting the services:
+
+- **MinIO API**: http://localhost:9001
+- **MinIO Console**: http://localhost:9091
+  - Username: `minio`
+  - Password: `minio123`
+
+## Using MinIO Client (mc)
+
+The `minio-client` container provides the `mc` CLI tool for administrating MinIO:
+
+```bash
+# Create an alias for easier access
 alias mc='docker exec -it minio-client mc'
-```
-- the above command sets an alias command "mc" which can be used to adminstrate/create buckets on the minio instance running within docker - refer to [minio client docu](https://docs.min.io/docs/minio-client-complete-guide.html)
 
-- (optional) if you want to use minio console - create console user and policy
-```
-export MINIO_CONSOLE_USER=console && \
-export MINIO_CONSOLE_PASSWORD=console123 && \
-\
-mc admin user add minio/ $MINIO_CONSOLE_USER $MINIO_CONSOLE_PASSWORD && \
-mc admin policy add minio/ consoleAdmin /root/.mc/admin.json && \
-mc admin policy set minio consoleAdmin user=$MINIO_CONSOLE_USER
-```
-- access using defined ports - e.g. http://localhost:9001 for minio and http://localhost:9091 for minio console (using console user/password)
+# Example: Create a bucket
+mc mb minio/mybucket
 
-#### (optional) Simple setup using cron
+# Example: List buckets
+mc ls minio/
 
-- define a simple bash script - refer to [sample](.start.sh)
-- add the following line to cron (crontab -e) - starts docker containers serving minio 30s after reboot
-
-```
-@reboot (sleep 30s; ~/docker/minio/start.sh)&
+# Example: Upload a file
+mc cp myfile.txt minio/mybucket/
 ```
 
-#### Comments
+For more commands, refer to [MinIO Client documentation](https://min.io/docs/minio/linux/reference/minio-mc.html).
 
-- if you find issues or have suggestions to improve the basic and minimalistic setup please let me know
+## Configuration
+
+All configuration is stored in the `.env` file:
+
+- `MINIO_STORAGE_LOCATION`: Data persistence location (default: `./data`)
+- `MINIO_PORT`: MinIO API port (default: `9001`)
+- `MINIO_CONSOLE_PORT`: MinIO Console port (default: `9091`)
+- `MINIO_ROOT_USER`: Root username (default: `minio`)
+- `MINIO_ROOT_PASSWORD`: Root password (default: `minio123`)
+
+## Services
+
+- **minio**: MinIO object storage server with built-in console
+- **minio-client**: MinIO client (mc) for CLI operations
+
+## Stopping Services
+
+```bash
+docker-compose down
+```
+
+To remove all data:
+```bash
+docker-compose down -v
+```
+
+## Integration with Airflow
+
+To use this MinIO instance with Airflow (running separately):
+
+1. Ensure both services can communicate (same Docker network or use host networking)
+2. In Airflow, create a connection:
+   - Connection ID: `minio_local`
+   - Connection Type: `Amazon Web Services`
+   - Extra: `{"endpoint_url": "http://minio:9000", "aws_access_key_id": "minio", "aws_secret_access_key": "minio123"}`
+
+   Note: If Airflow is not in the same Docker network, use `http://localhost:9001` instead of `http://minio:9000`.
