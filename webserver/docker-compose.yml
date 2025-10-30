@@ -10,6 +10,11 @@ services:
     container_name: uvloop-tcp-server
     volumes:
       - ./app:/app
+      - ./certs:/certs:ro
+    environment:
+      TLS_CERT: /certs/server.crt
+      TLS_KEY: /certs/server.key
+      TLS_CA: /certs/ca.crt
     ports:
       - "8888:8888"
     restart: always

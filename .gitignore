@@ -1,3 +1,6 @@
 logs/
 pgdata/
 config/
+*.pyc
+__pycache__/
+.env
