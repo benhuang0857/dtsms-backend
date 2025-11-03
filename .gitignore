@@ -4,3 +4,11 @@ config/
 *.pyc
 __pycache__/
 .env
+
+# Certificates and keys (should be generated per environment)
+*.key
+*.crt
+*.csr
+*.pem
+*.srl
+!**/certs/.gitkeep

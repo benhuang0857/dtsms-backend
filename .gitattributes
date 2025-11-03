@@ -1,0 +1,22 @@
+# Shell scripts should always use LF line endings
+*.sh text eol=lf
+
+# Python files should use LF
+*.py text eol=lf
+
+# Markdown files
+*.md text eol=lf
+
+# Windows batch files should use CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.key binary
+*.crt binary
+*.csr binary

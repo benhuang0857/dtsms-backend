@@ -1,0 +1,17 @@
+# 忽略上傳目錄中的所有檔案 (除了 .gitkeep)
+upload/*
+!upload/.gitkeep
+
+# Certificates and keys (should be generated per environment)
+certs/*.key
+certs/*.crt
+certs/*.csr
+certs/*.pem
+certs/*.srl
+!certs/.gitkeep
+!certs/README.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class

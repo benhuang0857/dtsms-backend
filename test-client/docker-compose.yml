@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  test-client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dtsms-test-client
+    volumes:
+      # 掛載要上傳的檔案目錄
+      - ./upload:/upload
+      # 掛載憑證目錄 (如果使用 mTLS)
+      - ../certs:/certs:ro
+    # 使用 host 網路模式以便連接到本機的伺服器
+    # Windows/Mac 使用 host.docker.internal
+    # Linux 使用 172.17.0.1 或 host 模式
+    network_mode: host
+
+    # 預設命令範例 (可以覆蓋)
+    # command:
+    #   - "/upload/test.txt"
+    #   - "--host"
+    #   - "127.0.0.1"
+    #   - "--port"
+    #   - "8888"
+    #   - "--secret"
+    #   - "supersecretkey"
+
+    # 如果需要使用 mTLS,取消註解以下行
+    command:
+      - "/upload/test.txt"
+      - "--host"
+      - "127.0.0.1"
+      - "--port"
+      - "8888"
+      - "--secret"
+      - "supersecretkey"
+      - "--client-cert"
+      - "/certs/client.crt"
+      - "--client-key"
+      - "/certs/client.key"
+      - "--ca-cert"
+      - "/certs/ca.crt"
