@@ -2,21 +2,23 @@
 
 ## 🚀 First Time Setup
 
-### Option 1: One-Command Setup (Recommended)
+### One-Command Setup (Recommended)
 
-Run the automated setup script:
+Run the automated setup script following security best practices:
 
 ```bash
 ./setup-certificates.sh
 ```
 
-Choose your preferred method:
-1. **Proper security flow** - Client private key stays on client (recommended)
-2. **Quick development** - All certificates generated in one place (faster, less secure)
+This script will:
+- Generate Server certificates (CA + Server cert)
+- Generate Client private key and CSR
+- Sign the Client CSR with the CA
+- Set up all files in the correct locations
 
-### Option 2: Manual Setup
+### Manual Setup (Step by Step)
 
-#### For Production-like Environment (Secure)
+If you prefer to run each step manually:
 
 ```bash
 # 1. Generate server certificates
@@ -25,7 +27,7 @@ cd webserver/certs
 
 # 2. Generate client CSR
 cd ../../test-client/certs
-./generate-csr.sh
+./generate-csr.sh test-client
 
 # 3. Sign client certificate
 cd ../../webserver/certs
@@ -35,13 +37,7 @@ cd ../../webserver/certs
 cd ../../test-client/certs
 mv test-client.key client.key
 mv test-client.crt client.crt
-```
-
-#### For Quick Development (Simple)
-
-```bash
-cd webserver/certs
-./generate-certs.sh
+rm -f test-client.csr
 ```
 
 ## 🔄 After Generating Certificates
@@ -74,7 +70,6 @@ dtsms-backend/
 │   ├── certs/
 │   │   ├── generate-server-certs.sh  # Generate CA + Server cert
 │   │   ├── sign-client-cert.sh       # Sign client CSR
-│   │   ├── generate-certs.sh         # Quick all-in-one (dev only)
 │   │   ├── ca.{key,crt}              # CA certificates (not in git)
 │   │   └── server.{key,crt}          # Server certificates (not in git)
 │   └── docker-compose.yml
