@@ -105,7 +105,20 @@ def merge_chunks(bucket: str, file_id: str, total_chunks: int, final_name: str):
 async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, pool: ThreadPoolExecutor):
     peer = writer.get_extra_info("peername")
     cert = writer.get_extra_info("peercert")
-    subject = cert.get("subject", [[""]])[0][0][1] if cert else "Unknown"
+
+    # 安全地解析 client 憑證的 CN
+    subject = "Unknown"
+    if cert:
+        try:
+            subject_info = cert.get("subject", ())
+            for rdn in subject_info:
+                for name_type, value in rdn:
+                    if name_type == "commonName":
+                        subject = value
+                        break
+        except (IndexError, TypeError, ValueError):
+            subject = "Unknown"
+
     log.info(f"Connected from {peer}, client_cert={subject}")
 
     # 1️⃣ 收到 header JSON
